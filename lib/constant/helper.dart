@@ -1,0 +1,1 @@
+var kPadding = 16.0;

@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/free_hd_wallpapers.iml" filepath="$PROJECT_DIR$/free_hd_wallpapers.iml" />
-      <module fileurl="file://$PROJECT_DIR$/android/free_hd_wallpapers_android.iml" filepath="$PROJECT_DIR$/android/free_hd_wallpapers_android.iml" />
     </modules>
   </component>
 </project>
