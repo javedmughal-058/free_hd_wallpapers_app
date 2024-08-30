@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:free_hd_wallpapers/controllers/bindings/network_dependency_injection.dart';
 import 'package:free_hd_wallpapers/view/splash_screen.dart';
 import 'package:get/get.dart';
 
 import 'controllers/bindings/app_binding.dart';
 
-void main() {
+Future<void> main() async{
   runApp(const MyApp());
+  NetworkDependencyInjection.init();
 }
 
 class MyApp extends StatelessWidget {
