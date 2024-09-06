@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:free_hd_wallpapers/constant/image_utils.dart';
+import 'package:free_hd_wallpapers/constant/utils/image_utils.dart';
 
 class CustomImageWidget extends StatelessWidget {
   final String path;
