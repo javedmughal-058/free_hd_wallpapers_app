@@ -1,7 +1,6 @@
 import 'dart:developer';
-
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:flutter/material.dart';
+import 'package:free_hd_wallpapers/constant/utils/toast_utils.dart';
 import 'package:get/get.dart';
 
 class NetworkController extends GetxController{
@@ -19,15 +18,7 @@ class NetworkController extends GetxController{
   void _updateConnectionStatus(ConnectivityResult connectivityResult){
     log("connection $connectivityResult");
     if(connectivityResult == ConnectivityResult.none){
-      Get.rawSnackbar(
-        message: 'PLEASE CONNECT TO THE INTERNET',
-        isDismissible: false,
-        duration: const Duration(days: 1),
-        backgroundColor: Colors.red.shade500,
-        icon: const Icon(Icons.wifi_off, size: 35, color: Colors.white),
-        margin: EdgeInsets.zero,
-        snackStyle: SnackStyle.GROUNDED,
-      );
+      ToastUtils.danger(title: 'PLEASE CONNECT TO THE INTERNET', duration: const Duration(days: 1));
     }else{
       if(Get.isSnackbarOpen){
         Get.closeCurrentSnackbar();

@@ -1,28 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:free_hd_wallpapers/constant/helper.dart';
 import 'package:free_hd_wallpapers/controllers/app_controller.dart';
-import 'package:free_hd_wallpapers/view/search_page.dart';
 import 'package:free_hd_wallpapers/view/widgets/custom_app_bar.dart';
-import 'package:free_hd_wallpapers/view/widgets/custom_hover_image_widget.dart';
-import 'package:free_hd_wallpapers/view/widgets/shimmer/shimmer_loading_utils.dart';
 import 'package:get/get.dart';
 
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+import 'widgets/custom_hover_image_widget.dart';
+import 'widgets/shimmer/shimmer_loading_utils.dart';
+
+class SearchPage extends StatelessWidget {
+  const SearchPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final AppController appController = Get.find();
     final size = MediaQuery.sizeOf(context);
-
-    Future<void> refresh() async{
-      appController.page.value = appController.random.nextInt(10) + 1;
-      appController.trendingImages.clear();
-      appController.fetchTrendingImages();
-    }
+    final AppController appController = Get.find();
 
     return Scaffold(
-      appBar: buildAppBar(context, leading: false),
+      appBar: buildAppBar(context),
       body: Padding(
         padding: EdgeInsets.all(kPadding),
         child: Column(
@@ -42,24 +36,21 @@ class HomePage extends StatelessWidget {
                 hintText: "Search Wallpapers",
                 prefixIcon: appController.isTextNotEmpty.value
                     ? IconButton(
-                      onPressed: (){
-                        if(appController.userInput.value.text.isNotEmpty){
-                          appController.userInput.value.clear();
-                        }
-                      },
-                      icon: appController.userInput.value.text.isNotEmpty
-                          ? Icon(Icons.clear, color: Theme.of(context).secondaryHeaderColor)
-                          : const SizedBox(),
-                    )
+                  onPressed: (){
+                    if(appController.userInput.value.text.isNotEmpty){
+                      appController.userInput.value.clear();
+                    }
+                  },
+                  icon: appController.userInput.value.text.isNotEmpty
+                      ? Icon(Icons.clear, color: Theme.of(context).secondaryHeaderColor)
+                      : const SizedBox(),
+                )
                     : const SizedBox(),
                 suffixIcon: IconButton(
                   onPressed: (){
-                    if(appController.userInput.value.text.isNotEmpty){
-                      appController.searchImages.clear();
-                      appController.searchPage.value = 1;
-                      appController.searchWallpapers();
-                      Get.to(()=> const SearchPage(), transition: Transition.fadeIn);
-                    }
+                    appController.searchImages.clear();
+                    appController.searchPage.value = 1;
+                    appController.searchWallpapers();
                   },
                   icon: Icon(Icons.search, color: Theme.of(context).secondaryHeaderColor),
                 ),
@@ -71,25 +62,26 @@ class HomePage extends StatelessWidget {
               child: Obx(()=> ListView(
                 shrinkWrap: true,
                 scrollDirection: Axis.horizontal,
-                children: List.generate(appController.recommendedList.length, (index) {
+                children: List.generate(appController.categoryList.length, (index) {
                   return GestureDetector(
                     onTap: (){
-                      appController.userInput.value.text = appController.recommendedList[index];
+                      appController.userInput.value.text = appController.categoryList[index]["title"];
                       appController.changeCategoryStatus();
+                      appController.searchImages.clear();
+                      appController.searchPage.value = 1;
                       appController.searchWallpapers();
-                      Get.to(()=> const SearchPage(), transition: Transition.fadeIn);
                     },
                     child: Container(
                       alignment: Alignment.center,
                       margin: EdgeInsets.symmetric(vertical: kPadding / 2, horizontal: kPadding / 4),
                       padding: EdgeInsets.symmetric(vertical: kPadding / 4, horizontal: kPadding / 2),
                       decoration: BoxDecoration(
-                        color: index == 0 ? Theme.of(context).primaryColor : null,
+                        color: appController.categoryList[index]["active"] == true ? Theme.of(context).primaryColor : null,
                         borderRadius: BorderRadius.circular(5),
                         border: Border.all(color: Theme.of(context).primaryColor),
                       ),
-                      child: Text(appController.recommendedList[index], style: Theme.of(context).textTheme.labelMedium!.copyWith(
-                        color: index == 0 ? Colors.white : null
+                      child: Text(appController.categoryList[index]["title"], style: Theme.of(context).textTheme.labelMedium!.copyWith(
+                          color: appController.categoryList[index]["active"] == true ? Colors.white : null
                       )),
                     ),
                   );
@@ -98,7 +90,7 @@ class HomePage extends StatelessWidget {
             ),
             Expanded(
               child: Obx(() {
-                if (appController.isLoading.value && appController.trendingImages.isEmpty) {
+                if (appController.isLoadingSecond.value && appController.searchImages.isEmpty) {
                   return GridView.builder(
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           mainAxisExtent: size.height * 0.35,
@@ -110,34 +102,29 @@ class HomePage extends StatelessWidget {
                         return ShimmerLoadingUtils.imageWidgetLoading(context, size: size);
                       });
                 }
-                 return NotificationListener<ScrollNotification>(
+                return NotificationListener<ScrollNotification>(
                   onNotification: (ScrollNotification scrollInfo) {
-                    if (scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent && !appController.isLoading.value) {
-                      appController.fetchTrendingImages();
+                    if (scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent && !appController.isLoadingSecond.value) {
+                      appController.searchWallpapers();
                     }
                     return false;
                   },
                   child: Stack(
                     children: [
-                      RefreshIndicator(
-                        onRefresh: refresh,
-                        backgroundColor: Theme.of(context).primaryColor,
-                        color: Colors.white,
-                        child: GridView.builder(
-                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                            mainAxisExtent: size.height * 0.35,
-                            crossAxisCount: 2,
-                            crossAxisSpacing: 10,
-                            mainAxisSpacing: 10),
-                            itemCount: appController.trendingImages.length + (appController.isLoading.value ? 1 : 0),
-                            itemBuilder: (context, index){
-                              if (index == appController.trendingImages.length) {
-                                return const SizedBox.shrink(); // Placeholder, the indicator will be in the center
-                              }
-                                return CustomImageWidgetWithOverlay(path: appController.trendingImages[index].imageUrl!, isNetwork: true, index: index);
-                            }),
-                      ),
-                      if (appController.isLoading.value)
+                      GridView.builder(
+                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                              mainAxisExtent: size.height * 0.35,
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 10,
+                              mainAxisSpacing: 10),
+                          itemCount: appController.searchImages.length + (appController.isLoadingSecond.value ? 1 : 0),
+                          itemBuilder: (context, index){
+                            if (index == appController.searchImages.length) {
+                              return const SizedBox.shrink(); // Placeholder, the indicator will be in the center
+                            }
+                            return CustomImageWidgetWithOverlay(path: appController.searchImages[index].imageUrl!, isNetwork: true, index: index);
+                          }),
+                      if (appController.isLoadingSecond.value)
                         Align(
                           alignment: Alignment.bottomCenter,
                           child: CircularProgressIndicator(
